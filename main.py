@@ -89,7 +89,7 @@ def publish(commit_message):
 		settings.IMPORT.ALIAS
 	)
 	github_commit_command = github_commit(
-		settings.GITHUB.PROJECT,
+		commit_message,
 		settings.GITHUB.BRANCH
 	)
 	apex_import_command = apex_import(
