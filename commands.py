@@ -10,7 +10,8 @@ def apex_export(connection_string, user, password, workspaceid, applicationid, s
 		f"-password {password} "
 		f"-workspaceid {workspaceid} "
 		f"-applicationid {applicationid} "
-		f"{'-split' if split else ''}"
+		f"{'-split' if split else ''} "
+		"-dir apex-export"
 	)
 
 
@@ -33,6 +34,6 @@ def create_import_sql(schema,applicationid,alias):
 		f"	apex_application_install.set_application_alias( '{alias}' );\n"
 		"end;\n"
 		"/\n"
-		f"@f{applicationid}.sql\n"
+		f"@apex-export/f{applicationid}.sql\n"
 		"quit;"
 	)
