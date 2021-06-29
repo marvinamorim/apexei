@@ -63,48 +63,73 @@ def init(
 		file.write(parameters)
 
 
-@apex_ei.command()
-@click.option('--commit-message', prompt='Github commit message')
-def publish(commit_message):
-	#os.system(apex_nitro.format({settings.APEXNITRO.PROJECT})
-	apex_nitro_command = apex_nitro(settings.APEXNITRO.PROJECT)
-	apex_export_command = apex_export(
-		settings.EXPORT.CONNECTION_STRING,
-		settings.EXPORT.USER,
-		settings.EXPORT.PASSWORD,
-		settings.EXPORT.WORKSPACEID,
-		settings.EXPORT.APPLICATIONID
-	)
-	apex_export_split_command = apex_export(
-		settings.EXPORT.CONNECTION_STRING,
-		settings.EXPORT.USER,
-		settings.EXPORT.PASSWORD,
-		settings.EXPORT.WORKSPACEID,
-		settings.EXPORT.APPLICATIONID,
-		True
-	)
-	create_import_sql_command = create_import_sql(
-		settings.IMPORT.SCHEMA,
-		settings.IMPORT.APPLICATIONID,
-		settings.IMPORT.ALIAS
-	)
-	github_commit_command = github_commit(
-		commit_message,
-		settings.GITHUB.BRANCH
-	)
-	apex_import_command = apex_import(
-		settings.IMPORT.CONNECTION_STRING,
-		settings.IMPORT.USER,
-		settings.IMPORT.PASSWORD
-	)
+def commit_message(ctx, param, github):
+	if github:
+		message = click.prompt('Github commit message')
+		return message
 
-	os.system(apex_nitro_command)
-	os.system(apex_export_command)
-	os.system(apex_export_split_command)
-	with open('import.sql', 'w') as file:
-		file.write(create_import_sql_command)
-	os.system(github_commit_command)
-	os.system(apex_import_command)
+
+@apex_ei.command()
+@click.option('--nitro/--no-nitro',   is_flag=True, default=True,  help="Don't publish apex-nitro static files")
+@click.option('--single/--no-single', is_flag=True, default=True,  help="Don't export single file application sql")
+@click.option('--split/--no-split',   is_flag=True, default=True,  help="Export split files application sql")
+@click.option('--github/--no-github', is_flag=True, default=True,  help="Don't export split files application sql", callback=commit_message,)
+@click.option('--import-sql/--no-import-sql', is_flag=True, default=False, help="Import application on production environment")
+def publish(nitro, single, split, github, import_sql):
+	#Export Apex-nitro static files
+	if nitro:
+		apex_nitro_command = apex_nitro(settings.APEXNITRO.PROJECT)
+		click.echo("Publishing static files into development environment...")
+		os.system(apex_nitro_command)
+	#Generate Apex single file export
+	if single:
+		apex_export_command = apex_export(
+			settings.EXPORT.CONNECTION_STRING,
+			settings.EXPORT.USER,
+			settings.EXPORT.PASSWORD,
+			settings.EXPORT.WORKSPACEID,
+			settings.EXPORT.APPLICATIONID
+		)
+		click.echo("Exporting single file from Apex Application...")
+		os.system(apex_export_command)
+	#Generate Apex split files export
+	if split:
+		apex_export_split_command = apex_export(
+			settings.EXPORT.CONNECTION_STRING,
+			settings.EXPORT.USER,
+			settings.EXPORT.PASSWORD,
+			settings.EXPORT.WORKSPACEID,
+			settings.EXPORT.APPLICATIONID,
+			True
+		)
+		click.echo("Exporting explit files from Apex Application...")
+		os.system(apex_export_split_command)
+	if import_sql:
+		#Generate import sql file to sync application into prod env
+		create_import_sql_command = create_import_sql(
+			settings.IMPORT.SCHEMA,
+			settings.IMPORT.APPLICATIONID,
+			settings.IMPORT.ALIAS
+		)
+		click.echo("Generating import file to be imported on production environment...")
+		with open('import.sql', 'w') as file:
+			file.write(create_import_sql_command)
+		#Import application on prod env
+		apex_import_command = apex_import(
+			settings.IMPORT.CONNECTION_STRING,
+			settings.IMPORT.USER,
+			settings.IMPORT.PASSWORD
+		)
+		click.echo("Importing application on production environment...")
+		os.system(apex_import_command)
+	#Commit and push alterations into github
+	if github:
+		github_commit_command = github_commit(
+			github,
+			settings.GITHUB.BRANCH
+		)
+		click.echo("Publishing changes into Github...")
+		os.system(github_commit_command)
 
 
 if __name__ == '__main__':
