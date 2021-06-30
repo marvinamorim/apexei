@@ -37,3 +37,43 @@ def create_import_sql(schema,applicationid,alias):
 		f"@apex-export/f{applicationid}.sql\n"
 		"quit;"
 	)
+
+def get_ddl_query(owner, prefix=''):
+	return '''
+		select dbms_metadata.get_ddl(
+				 OBJECT_TYPE,
+				 OBJECT_NAME,
+				 OWNER
+			   ) as "ddl",
+			   OBJECT_NAME as "name",
+			   OBJECT_TYPE as "type"
+		from ALL_OBJECTS
+		WHERE OWNER = upper('{}')
+		and OBJECT_TYPE not in ('LOB','JOB','PACKAGE BODY','INDEX')
+		and OBJECT_NAME not like ('APEX$%')
+		and (OBJECT_NAME like upper('{}%') or '{}' = '')
+		order by case 
+					when OBJECT_TYPE = 'TABLE'    then 0
+					when OBJECT_TYPE = 'INDEX' then 1
+					when OBJECT_TYPE = 'SEQUENCE' then 2
+					when OBJECT_TYPE = 'VIEW' then 3
+					else 4
+				end, OBJECT_TYPE, OBJECT_NAME
+	'''.format(owner, prefix, prefix)
+
+def get_ddl_options():
+	return '''
+	begin
+		DBMS_METADATA.set_transform_param (DBMS_METADATA.session_transform, 'SQLTERMINATOR', true);
+		DBMS_METADATA.set_transform_param (DBMS_METADATA.session_transform, 'PRETTY', true);
+		DBMS_METADATA.set_transform_param (DBMS_METADATA.session_transform, 'SEGMENT_ATTRIBUTES', false);
+		DBMS_METADATA.set_transform_param (DBMS_METADATA.session_transform, 'STORAGE', false);
+	end;
+	'''
+
+def get_ddl_template(object_type, object_name, object_ddl):
+	return (
+		f'--{object_type}: {object_name}--------------------------------------------------------\n'
+		f'{object_ddl}\n'
+		'--------------------------------------------------------------------------------\n'
+	)

@@ -17,6 +17,14 @@ SCHEMA="{import_schema}"
 APPLICATIONID={import_appid}
 ALIAS="{import_alias}"
 
+#DDL Parameters
+[DDL]
+CONNECTION_STRING="{connection_string}"
+USER="{ddl_user}"
+PASSWORD="{ddl_password}"
+OWNER="{ddl_onwer}"
+PREFIX="{ddl_prefix}"
+
 #Github Parameters
 [GITHUB]
 PROJECT="{github_project}"
