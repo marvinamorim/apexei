@@ -2,6 +2,9 @@
 # Ignore dynaconf secret files
 .secrets.*
 
+#ignore test folder
+test
+
 #VSCodium config folder
 .vscode
 
