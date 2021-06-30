@@ -6,6 +6,7 @@ from commands import (apex_export, apex_import, apex_nitro, create_import_sql,
                       github_commit)
 from config import settings
 from parameters import parameters_template
+from ddl_export import create_ddls
 
 
 @click.group()
@@ -69,20 +70,22 @@ def commit_message(ctx, param, github):
 		return message
 
 
+
 @apex_ei.command()
-@click.option('--nitro/--no-nitro',   is_flag=True, default=True,  help="Don't publish apex-nitro static files")
-@click.option('--single/--no-single', is_flag=True, default=True,  help="Don't export single file application sql")
-@click.option('--split/--no-split',   is_flag=True, default=True,  help="Export split files application sql")
-@click.option('--github/--no-github', is_flag=True, default=True,  help="Don't export split files application sql", callback=commit_message,)
+@click.option('--nitro/--no-nitro',   is_flag=True, default=True, help="Don't publish apex-nitro static files")
+@click.option('--single/--no-single', is_flag=True, default=True, help="Don't export single file application sql")
+@click.option('--split/--no-split',   is_flag=True, default=True, help="Export split files application sql")
+@click.option('--ddl/--no-ddl',   	  is_flag=True, default=True, help="Export DDL files for this application")
+@click.option('--github/--no-github', is_flag=True, default=True, help="Commit and push changes to github", callback=commit_message)
 @click.option('--import-sql/--no-import-sql', is_flag=True, default=False, help="Import application on production environment")
-def publish(nitro, single, split, github, import_sql):
+def publish(nitro, single, split, ddl, github, import_sql):
 	#Export Apex-nitro static files
-	if nitro:
+	if nitro and settings.APEXNITRO.PROJECT:
 		apex_nitro_command = apex_nitro(settings.APEXNITRO.PROJECT)
-		click.echo("Publishing static files into development environment...")
+		click.echo("*****Publishing static files into development environment...")
 		os.system(apex_nitro_command)
 	#Generate Apex single file export
-	if single:
+	if single and settings.EXPORT.CONNECTION_STRING:
 		apex_export_command = apex_export(
 			settings.EXPORT.CONNECTION_STRING,
 			settings.EXPORT.USER,
@@ -90,10 +93,10 @@ def publish(nitro, single, split, github, import_sql):
 			settings.EXPORT.WORKSPACEID,
 			settings.EXPORT.APPLICATIONID
 		)
-		click.echo("Exporting single file from Apex Application...")
+		click.echo("*****Exporting single file from Apex Application...")
 		os.system(apex_export_command)
 	#Generate Apex split files export
-	if split:
+	if split and settings.EXPORT.CONNECTION_STRING:
 		apex_export_split_command = apex_export(
 			settings.EXPORT.CONNECTION_STRING,
 			settings.EXPORT.USER,
@@ -102,16 +105,16 @@ def publish(nitro, single, split, github, import_sql):
 			settings.EXPORT.APPLICATIONID,
 			True
 		)
-		click.echo("Exporting explit files from Apex Application...")
+		click.echo("*****Exporting explit files from Apex Application...")
 		os.system(apex_export_split_command)
-	if import_sql:
+	if import_sql and settings.IMPORT.CONNECTION_STRING:
 		#Generate import sql file to sync application into prod env
 		create_import_sql_command = create_import_sql(
 			settings.IMPORT.SCHEMA,
 			settings.IMPORT.APPLICATIONID,
 			settings.IMPORT.ALIAS
 		)
-		click.echo("Generating import file to be imported on production environment...")
+		click.echo("*****Generating import file to be imported on production environment...")
 		with open('import.sql', 'w') as file:
 			file.write(create_import_sql_command)
 		#Import application on prod env
@@ -120,15 +123,19 @@ def publish(nitro, single, split, github, import_sql):
 			settings.IMPORT.USER,
 			settings.IMPORT.PASSWORD
 		)
-		click.echo("Importing application on production environment...")
+		click.echo("*****Importing application on production environment...")
 		os.system(apex_import_command)
+	#Export DDL files
+	if ddl:
+		click.echo("*****Exporting DDL files...")
+		create_ddls()
 	#Commit and push alterations into github
 	if github:
 		github_commit_command = github_commit(
 			github,
 			settings.GITHUB.BRANCH
 		)
-		click.echo("Publishing changes into Github...")
+		click.echo("*****Publishing changes into Github...")
 		os.system(github_commit_command)
 
 
