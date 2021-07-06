@@ -21,16 +21,19 @@ def tuple_to_dict(cursor):
 
 def check_ddl_folder():
 	print("Checking of ddl folder exists")
-	if not os.path.isdir('ddl'):
-		os.makedirs('ddl')
+	if not os.path.isdir('sql'):
+		os.makedirs('sql')
+		os.makedirs('sql\\ddl')
 		return True
+	if not os.path.isdir('sql\\ddl'):
+		os.makedirs('sql\\ddl')
 	return False
 
 
 def clear_ddl_dir():
 	if check_ddl_folder():
 		return
-	for root, dirs, files in os.walk('ddl'):
+	for root, dirs, files in os.walk('sql\\ddl'):
 		for f in files:
 			os.unlink(os.path.join(root, f))
 		for d in dirs:
