@@ -42,7 +42,7 @@ def clear_ddl_dir():
 
 def create_object_file(object_type, object_name, object_ddl):
 	#check if folder already exists, if not, create
-	filename = f'ddl\\{object_type}_{object_name}.sql'
+	filename = f'sql\\ddl\\{object_type}_{object_name}.sql'
 	print("Creating new/changed file:", filename)
 	object_file = open(filename, "w")
 	object_file.write(object_ddl)
@@ -64,7 +64,7 @@ def create_ddls():
 	data = cur.execute(query)
 	data.rowfactory = tuple_to_dict(data)
 	ddls = [row for row in data]
-	filename = "ddl\\0_SINGLE_FILE_DDL.sql"
+	filename = "sql\\ddl\\0_SINGLE_FILE_DDL.sql"
 	print("Creating single file", filename)
 	single_file = open(filename, "w")
 	for row in ddls:
