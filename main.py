@@ -72,12 +72,12 @@ def commit_message(ctx, param, github):
 
 
 @apex_ei.command()
-@click.option('--nitro/--no-nitro',   is_flag=True, default=True, help="Don't publish apex-nitro static files")
-@click.option('--single/--no-single', is_flag=True, default=True, help="Don't export single file application sql")
-@click.option('--split/--no-split',   is_flag=True, default=True, help="Export split files application sql")
-@click.option('--ddl/--no-ddl',   	  is_flag=True, default=True, help="Export DDL files for this application")
-@click.option('--github/--no-github', is_flag=True, default=True, help="Commit and push changes to github", callback=commit_message)
-@click.option('--import-sql/--no-import-sql', is_flag=True, default=False, help="Import application on production environment")
+@click.option('--nitro/--no-nitro',   is_flag=True, default=True, help="Publish apex-nitro static files. Default: True")
+@click.option('--single/--no-single', is_flag=True, default=True, help="Export single file application sql. Default: True")
+@click.option('--split/--no-split',   is_flag=True, default=True, help="Export split files application sql. Default: True")
+@click.option('--ddl/--no-ddl',   	  is_flag=True, default=True, help="Export DDL files for this application. Default: True")
+@click.option('--github/--no-github', is_flag=True, default=True, help="Commit and push changes to github. Default: True", callback=commit_message)
+@click.option('--import-sql/--no-import-sql', is_flag=True, default=False, help="Import application on production environment. Default: False")
 def publish(nitro, single, split, ddl, github, import_sql):
 	#Export Apex-nitro static files
 	if nitro and settings.APEXNITRO.PROJECT:
