@@ -76,7 +76,7 @@ def commit_message(ctx, param, github):
 @click.option('--single/--no-single', is_flag=True, default=True, help="Export single file application sql. Default: True")
 @click.option('--split/--no-split',   is_flag=True, default=True, help="Export split files application sql. Default: True")
 @click.option('--ddl/--no-ddl',   	  is_flag=True, default=True, help="Export DDL files for this application. Default: True")
-@click.option('--github/--no-github', is_flag=True, default=True, help="Commit and push changes to github. Default: True", callback=commit_message)
+@click.option('--github/--no-github', is_flag=True, default=False, help="Commit and push changes to github. Default: True", callback=commit_message)
 @click.option('--import-sql/--no-import-sql', is_flag=True, default=False, help="Import application on production environment. Default: False")
 def publish(nitro, single, split, ddl, github, import_sql):
 	#Export Apex-nitro static files
